@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Member</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #f0f2f5; display: flex; justify-content: center; padding: 60px 20px; }
+    .container { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1 { margin-bottom: 20px; color: #333; }
+    input { width: 100%; padding: 10px; margin-bottom: 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; }
+    input:focus { border-color: #4a90e2; outline: none; }
+    button { width: 100%; padding: 12px; background: #4a90e2; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #357abd; }
+    .back { color: #4a90e2; text-decoration: none; display: block; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>+ Add Member</h1>
+    <form method="POST">
+      <input type="text" name="first_name" placeholder="First Name" required />
+      <input type="text" name="last_name" placeholder="Last Name" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="text" name="phone" placeholder="Phone" required />
+      <input type="date" name="join_date" required />
+      <button type="submit">Add Member</button>
+    </form>
+    <a class="back" href="/members">← Back to Members</a>
+  </div>
+</body>
+</html>
