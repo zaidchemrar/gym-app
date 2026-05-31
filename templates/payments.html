@@ -32,7 +32,17 @@
         <td>{{ payment.first_name }} {{ payment.last_name }}</td>
         <td>{{ payment.payment_month }}</td>
         <td>{{ payment.amount }}€</td>
-        <td class="{{ payment.status }}">{{ payment.status.upper() }}</td>
+<td>
+  {% if payment.status == 'unpaid' %}
+    <form method="POST" action="/mark_paid/{{ payment.member_id }}">
+      <button type="submit" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+        UNPAID — Click to Pay
+      </button>
+    </form>
+  {% else %}
+    <span class="paid">PAID ✓</span>
+  {% endif %}
+</td>
         <td>{{ payment.payment_date or '—' }}</td>
       </tr>
       {% endfor %}
