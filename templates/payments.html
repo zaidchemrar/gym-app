@@ -1,53 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Payments</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: #f0f2f5; padding: 40px 20px; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h1 { margin-bottom: 20px; color: #333; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #4a90e2; color: white; }
-    .paid { color: green; font-weight: bold; }
-    .unpaid { color: red; font-weight: bold; }
-    .back { color: #4a90e2; text-decoration: none; display: block; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>💶 Payments</h1>
-    <table>
-      <tr>
-        <th>Member</th>
-        <th>Month</th>
-        <th>Amount</th>
-        <th>Status</th>
-        <th>Payment Date</th>
-      </tr>
-      {% for payment in payments %}
-      <tr>
-        <td>{{ payment.first_name }} {{ payment.last_name }}</td>
-        <td>{{ payment.payment_month }}</td>
-        <td>{{ payment.amount }}€</td>
-<td>
-  {% if payment.status == 'unpaid' %}
-    <form method="POST" action="/mark_paid/{{ payment.member_id }}">
-      <button type="submit" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-        UNPAID — Click to Pay
-      </button>
-    </form>
-  {% else %}
-    <span class="paid">PAID ✓</span>
-  {% endif %}
-</td>
-        <td>{{ payment.payment_date or '—' }}</td>
-      </tr>
-      {% endfor %}
-    </table>
-    <a class="back" href="/">← Back to Home</a>
-  </div>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Payments</h1>
+  <p>Monthly subscription tracking — 29€ per member</p>
+</div>
+
+<div class="card">
+  <table>
+    <tr>
+      <th>Member</th>
+      <th>Month</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Payment Date</th>
+    </tr>
+    {% for payment in payments %}
+    <tr>
+      <td>{{ payment.first_name }} {{ payment.last_name }}</td>
+      <td>{{ payment.payment_month }}</td>
+      <td>{{ payment.amount }}€</td>
+      <td>
+        {% if payment.status == 'unpaid' %}
+          <form method="POST" action="/mark_paid/{{ payment.member_id }}">
+            <button type="submit" class="btn btn-danger" style="padding:6px 12px; font-size:12px;">
+              UNPAID — Click to Pay
+            </button>
+          </form>
+        {% else %}
+          <span class="badge badge-paid">PAID ✓</span>
+        {% endif %}
+      </td>
+      <td>{{ payment.payment_date or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

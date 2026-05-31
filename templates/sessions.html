@@ -1,43 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Sessions</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: #f0f2f5; padding: 40px 20px; }
-    .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h1 { margin-bottom: 20px; color: #333; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #4a90e2; color: white; }
-    .btn { display: inline-block; padding: 10px 16px; background: #4a90e2; color: white; border-radius: 8px; text-decoration: none; margin-bottom: 20px; }
-    .back { color: #4a90e2; text-decoration: none; display: block; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🏃 Sessions</h1>
-    <a class="btn" href="/add_session">+ Add Session</a>
-    <table>
-      <tr>
-        <th>Member</th>
-        <th>Date</th>
-        <th>Type</th>
-        <th>Duration</th>
-        <th>Trainer</th>
-      </tr>
-      {% for session in sessions %}
-      <tr>
-        <td>{{ session.first_name }} {{ session.last_name }}</td>
-        <td>{{ session.session_date }}</td>
-        <td>{{ session.session_type }}</td>
-        <td>{{ session.duration_minutes }} min</td>
-        <td>{{ session.trainer_name or 'No trainer' }}</td>
-      </tr>
-      {% endfor %}
-    </table>
-    <a class="back" href="/">← Back to Home</a>
+{% extends 'base.html' %}
+{% block title %}Sessions{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Sessions</h1>
+  <p>All gym sessions logged by members</p>
+</div>
+
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="font-size:16px; color:#0f172a;">All Sessions</h2>
+    <a href="/add_session" class="btn btn-primary">+ Add Session</a>
   </div>
-</body>
-</html>
+  <table>
+    <tr>
+      <th>Member</th>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Duration</th>
+      <th>Trainer</th>
+    </tr>
+    {% for session in sessions %}
+    <tr>
+      <td>{{ session.first_name }} {{ session.last_name }}</td>
+      <td>{{ session.session_date }}</td>
+      <td>{{ session.session_type }}</td>
+      <td>{{ session.duration_minutes }} min</td>
+      <td>{{ session.trainer_name or 'No trainer' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

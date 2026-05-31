@@ -1,28 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Gym Manager</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: #f0f2f5; display: flex; justify-content: center; padding: 60px 20px; }
-    .container { background: white; padding: 40px; border-radius: 12px; width: 500px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-    h1 { color: #333; margin-bottom: 10px; }
-    p { color: #777; margin-bottom: 30px; }
-    .nav { display: flex; flex-direction: column; gap: 12px; }
-    a { display: block; padding: 14px; background: #4a90e2; color: white; border-radius: 8px; text-decoration: none; font-size: 16px; }
-    a:hover { background: #357abd; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🏋️ Gym Manager</h1>
-    <p>Manage your gym members, sessions and payments</p>
-    <div class="nav">
-      <a href="/members">👥 Members</a>
-      <a href="/sessions">🏃 Sessions</a>
-      <a href="/payments">💶 Payments</a>
-    </div>
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Welcome back — here's what's happening at your gym</p>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="label">Total Members</div>
+    <div class="value">{{ stats.total_members }}</div>
+    <div class="sub">registered members</div>
   </div>
-</body>
-</html>
+  <div class="stat-card">
+    <div class="label">Sessions This Month</div>
+    <div class="value">{{ stats.sessions_this_month }}</div>
+    <div class="sub">total sessions</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Revenue This Month</div>
+    <div class="value">{{ stats.revenue }}€</div>
+    <div class="sub">from paid subscriptions</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Unpaid</div>
+    <div class="value">{{ stats.unpaid }}</div>
+    <div class="sub">members haven't paid</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="font-size:16px; color:#0f172a; margin-bottom:16px;">Most Active Members This Month</h2>
+  <table>
+    <tr>
+      <th>Member</th>
+      <th>Sessions</th>
+      <th>Total Minutes</th>
+    </tr>
+    {% for row in stats.top_members %}
+    <tr>
+      <td>{{ row.first_name }} {{ row.last_name }}</td>
+      <td>{{ row.total_sessions }}</td>
+      <td>{{ row.total_minutes }} min</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

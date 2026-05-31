@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login — GymPro</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+    .logo span { color: #38bdf8; }
+    .subtitle { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .form-group input {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; color: #1e293b; transition: border 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: #38bdf8; }
+    button {
+      width: 100%; padding: 12px;
+      background: #38bdf8; color: #0f172a;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #0ea5e9; color: white; }
+    .flash { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+    .flash-error { background: #fee2e2; color: #dc2626; }
+    .flash-success { background: #dcfce7; color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🏋️ Gym<span>Pro</span></div>
+    <div class="subtitle">Sign in to your account</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" required />
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+  </div>
+</body>
+</html>
