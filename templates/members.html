@@ -22,13 +22,14 @@
     </tr>
     {% for member in members %}
     <tr>
-      <td>{{ member.first_name }} {{ member.last_name }}</td>
+      <td><a href="/member/{{ member.id }}" style="color:#38bdf8; text-decoration:none; font-weight:600;">{{ member.first_name }} {{ member.last_name }}</a></td>
       <td>{{ member.email }}</td>
       <td>{{ member.phone }}</td>
       <td>{{ member.join_date }}</td>
       <td>
+        <a href="/edit_member/{{ member.id }}" class="btn btn-success" style="padding:6px 12px; font-size:12px; margin-right:6px;">Edit</a>
         <form method="POST" action="/delete_member/{{ member.id }}" style="display:inline;">
-          <button class="btn btn-danger" onclick="return confirm('Delete this member?')">Delete</button>
+          <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="return confirm('Delete this member?')">Delete</button>
         </form>
       </td>
     </tr>

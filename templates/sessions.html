@@ -12,6 +12,22 @@
     <h2 style="font-size:16px; color:#0f172a;">All Sessions</h2>
     <a href="/add_session" class="btn btn-primary">+ Add Session</a>
   </div>
+
+  <form method="GET" style="display:flex; gap:12px; margin-bottom:20px;">
+    <input type="text" name="search" placeholder="Search by member name..." value="{{ search }}"
+      style="padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; flex:1;">
+    <select name="type" style="padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px;">
+      <option value="">All Types</option>
+      <option value="Weights" {{ 'selected' if session_type == 'Weights' }}>Weights</option>
+      <option value="Cardio" {{ 'selected' if session_type == 'Cardio' }}>Cardio</option>
+      <option value="CrossFit" {{ 'selected' if session_type == 'CrossFit' }}>CrossFit</option>
+      <option value="Swimming" {{ 'selected' if session_type == 'Swimming' }}>Swimming</option>
+      <option value="Yoga" {{ 'selected' if session_type == 'Yoga' }}>Yoga</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="/sessions" class="btn" style="background:#f1f5f9; color:#64748b;">Clear</a>
+  </form>
+
   <table>
     <tr>
       <th>Member</th>
@@ -19,6 +35,7 @@
       <th>Type</th>
       <th>Duration</th>
       <th>Trainer</th>
+      <th>Actions</th>
     </tr>
     {% for session in sessions %}
     <tr>
@@ -27,6 +44,11 @@
       <td>{{ session.session_type }}</td>
       <td>{{ session.duration_minutes }} min</td>
       <td>{{ session.trainer_name or 'No trainer' }}</td>
+      <td>
+        <form method="POST" action="/delete_session/{{ session.id }}" style="display:inline;">
+          <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="return confirm('Delete this session?')">Delete</button>
+        </form>
+      </td>
     </tr>
     {% endfor %}
   </table>

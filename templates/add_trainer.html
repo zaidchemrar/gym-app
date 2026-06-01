@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Add Trainer{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Add Trainer</h1>
+  <p>Register a new trainer</p>
+</div>
+
+<div class="card" style="max-width: 560px; margin: 0;">
+  <form method="POST">
+    <div class="form-group">
+      <label>First Name</label>
+      <input type="text" name="first_name" placeholder="First name" required />
+    </div>
+    <div class="form-group">
+      <label>Last Name</label>
+      <input type="text" name="last_name" placeholder="Last name" required />
+    </div>
+    <div class="form-group">
+      <label>Specialty</label>
+      <input type="text" name="specialty" placeholder="e.g. Weightlifting, Cardio, CrossFit" required />
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+      Add Trainer
+    </button>
+  </form>
+  <a href="/trainers" style="display:block; margin-top:16px; color:#64748b; font-size:14px;">← Back to Trainers</a>
+</div>
+{% endblock %}

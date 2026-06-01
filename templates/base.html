@@ -15,7 +15,7 @@
       color: white;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      
       padding: 30px 20px;
       position: fixed;
       height: 100vh;
@@ -184,6 +184,9 @@
       <a href="/members" class="{{ 'active' if request.path == '/members' }}">
         <span class="icon">👥</span> Members
       </a>
+      <a href="/trainers" class="{{ 'active' if request.path == '/trainers' }}">
+  <span class="icon">💪</span> Trainers
+</a>
       <a href="/sessions" class="{{ 'active' if request.path == '/sessions' }}">
         <span class="icon">🏃</span> Sessions
       </a>

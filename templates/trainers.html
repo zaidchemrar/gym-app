@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Trainers{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Trainers</h1>
+  <p>Manage gym trainers</p>
+</div>
+
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="font-size:16px; color:#0f172a;">All Trainers</h2>
+    <a href="/add_trainer" class="btn btn-primary">+ Add Trainer</a>
+  </div>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Specialty</th>
+      <th>Actions</th>
+    </tr>
+    {% for trainer in trainers %}
+    <tr>
+      <td>{{ trainer.first_name }} {{ trainer.last_name }}</td>
+      <td>{{ trainer.specialty }}</td>
+      <td>
+        <form method="POST" action="/delete_trainer/{{ trainer.id }}" style="display:inline;">
+          <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="return confirm('Delete this trainer?')">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

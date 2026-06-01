@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import pymysql
+import bcrypt
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -139,18 +140,33 @@ def add_member():
 def sessions():
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("""
+    search = request.args.get('search', '')
+    session_type = request.args.get('type', '')
+    
+    query = """
         SELECT s.id, m.first_name, m.last_name, s.session_date, 
                s.session_type, s.duration_minutes,
                CONCAT(t.first_name, ' ', t.last_name) AS trainer_name
         FROM sessions s
         JOIN members m ON s.member_id = m.id
         LEFT JOIN trainers t ON s.trainer_id = t.id
-        ORDER BY s.session_date DESC
-    """)
+        WHERE 1=1
+    """
+    params = []
+    
+    if search:
+        query += " AND (m.first_name LIKE %s OR m.last_name LIKE %s)"
+        params.extend(['%' + search + '%', '%' + search + '%'])
+    
+    if session_type:
+        query += " AND s.session_type = %s"
+        params.append(session_type)
+    
+    query += " ORDER BY s.session_date DESC"
+    cursor.execute(query, params)
     sessions = cursor.fetchall()
     db.close()
-    return render_template('sessions.html', sessions=sessions)
+    return render_template('sessions.html', sessions=sessions, search=search, session_type=session_type)
 
 # Payments page
 @app.route('/payments')
@@ -158,16 +174,26 @@ def sessions():
 def payments():
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("""
+    status_filter = request.args.get('status', '')
+    
+    query = """
         SELECT m.id AS member_id, m.first_name, m.last_name, p.payment_month, 
                p.amount, p.status, p.payment_date
         FROM payments p
         JOIN members m ON p.member_id = m.id
-        ORDER BY p.status ASC
-    """)
+        WHERE 1=1
+    """
+    params = []
+    if status_filter:
+        query += " AND p.status = %s"
+        params.append(status_filter)
+    
+    query += " ORDER BY p.status ASC"
+    cursor.execute(query, params)
     payments = cursor.fetchall()
     db.close()
-    return render_template('payments.html', payments=payments)
+    return render_template('payments.html', payments=payments, status_filter=status_filter)
+
 @app.route('/add_session', methods=['GET', 'POST'])
 @login_required
 def add_session():
@@ -226,25 +252,163 @@ def delete_member(member_id):
     return redirect(url_for('members'))
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+      return redirect(url_for('index'))
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
+        password = request.form['password'].encode('utf-8')
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         user = cursor.fetchone()
         db.close()
         if user:
-            session['user'] = username
-            flash('Welcome back, ' + username + '!', 'success')
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid username or password.', 'error')
+            stored = user['password']
+            if isinstance(stored, str):
+                stored = stored.encode('utf-8')
+            if bcrypt.checkpw(password, stored):
+                session['user'] = username
+                flash('Welcome back, ' + username + '!', 'success')
+                return redirect(url_for('index'))
+        flash('Invalid username or password.', 'error')
     return render_template('login.html')
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
+@app.route('/edit_member/<int:member_id>', methods=['GET', 'POST'])
+@login_required
+def edit_member(member_id):
+    db = get_db()
+    cursor = db.cursor()
+    if request.method == 'POST':
+        first_name = request.form['first_name'].strip()
+        last_name = request.form['last_name'].strip()
+        email = request.form['email'].strip()
+        phone = request.form['phone'].strip()
+        if not first_name or not last_name or not email or not phone:
+            flash('All fields are required.', 'error')
+            return redirect(url_for('edit_member', member_id=member_id))
+        cursor.execute("""
+            UPDATE members 
+            SET first_name=%s, last_name=%s, email=%s, phone=%s 
+            WHERE id=%s
+        """, (first_name, last_name, email, phone, member_id))
+        db.commit()
+        db.close()
+        flash('Member updated successfully!', 'success')
+        return redirect(url_for('members'))
+    cursor.execute("SELECT * FROM members WHERE id = %s", (member_id,))
+    member = cursor.fetchone()
+    db.close()
+    return render_template('edit_member.html', member=member)
+
+@app.route('/delete_session/<int:session_id>', methods=['POST'])
+@login_required
+def delete_session(session_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM sessions WHERE id = %s", (session_id,))
+    db.commit()
+    db.close()
+    flash('Session deleted.', 'success')
+    return redirect(url_for('sessions'))
+@app.route('/trainers')
+@login_required
+def trainers():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM trainers")
+    trainers = cursor.fetchall()
+    db.close()
+    return render_template('trainers.html', trainers=trainers)
+
+@app.route('/add_trainer', methods=['GET', 'POST'])
+@login_required
+def add_trainer():
+    if request.method == 'POST':
+        first_name = request.form['first_name'].strip()
+        last_name = request.form['last_name'].strip()
+        specialty = request.form['specialty'].strip()
+        if not first_name or not last_name or not specialty:
+            flash('All fields are required.', 'error')
+            return render_template('add_trainer.html')
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "INSERT INTO trainers (first_name, last_name, specialty) VALUES (%s, %s, %s)",
+            (first_name, last_name, specialty)
+        )
+        db.commit()
+        db.close()
+        flash('Trainer added successfully!', 'success')
+        return redirect(url_for('trainers'))
+    return render_template('add_trainer.html')
+
+@app.route('/delete_trainer/<int:trainer_id>', methods=['POST'])
+@login_required
+def delete_trainer(trainer_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("UPDATE sessions SET trainer_id = NULL WHERE trainer_id = %s", (trainer_id,))
+    cursor.execute("DELETE FROM trainers WHERE id = %s", (trainer_id,))
+    db.commit()
+    db.close()
+    flash('Trainer deleted.', 'success')
+    return redirect(url_for('trainers'))
+@app.route('/member/<int:member_id>')
+@login_required
+def member_profile(member_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM members WHERE id = %s", (member_id,))
+    member = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT * FROM payments 
+        WHERE member_id = %s 
+        AND MONTH(payment_month) = MONTH(CURDATE())
+        AND YEAR(payment_month) = YEAR(CURDATE())
+    """, (member_id,))
+    payment = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT s.*, CONCAT(t.first_name, ' ', t.last_name) AS trainer_name
+        FROM sessions s
+        LEFT JOIN trainers t ON s.trainer_id = t.id
+        WHERE s.member_id = %s
+        ORDER BY s.session_date DESC
+    """, (member_id,))
+    sessions = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total_sessions,
+               COALESCE(SUM(duration_minutes), 0) AS total_minutes
+        FROM sessions
+        WHERE member_id = %s
+        AND MONTH(session_date) = MONTH(CURDATE())
+        AND YEAR(session_date) = YEAR(CURDATE())
+    """, (member_id,))
+    monthly = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT session_type, COUNT(*) AS count
+        FROM sessions
+        WHERE member_id = %s
+        GROUP BY session_type
+        ORDER BY count DESC
+        LIMIT 1
+    """, (member_id,))
+    favorite = cursor.fetchone()
+
+    db.close()
+    return render_template('member_profile.html',
+        member=member,
+        payment=payment,
+        sessions=sessions,
+        monthly=monthly,
+        favorite=favorite
+    )
 if __name__ == '__main__':
     app.run(debug=True)

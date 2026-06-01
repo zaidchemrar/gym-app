@@ -8,6 +8,16 @@
 </div>
 
 <div class="card">
+  <form method="GET" style="display:flex; gap:12px; margin-bottom:20px;">
+    <select name="status" style="padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px;">
+      <option value="">All Payments</option>
+      <option value="paid" {{ 'selected' if status_filter == 'paid' }}>Paid Only</option>
+      <option value="unpaid" {{ 'selected' if status_filter == 'unpaid' }}>Unpaid Only</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="/payments" class="btn" style="background:#f1f5f9; color:#64748b;">Clear</a>
+  </form>
+
   <table>
     <tr>
       <th>Member</th>
