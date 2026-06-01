@@ -23,6 +23,12 @@
   </div>
 </div>
 
+<!-- CHART -->
+<div class="card" style="margin-bottom:24px;">
+  <h2 style="font-size:14px; color:#64748b; margin-bottom:16px;">SESSIONS LAST 6 MONTHS</h2>
+  <canvas id="sessionsChart" height="80"></canvas>
+</div>
+
 <div class="card" style="margin-bottom:24px;">
   <h2 style="font-size:14px; color:#64748b; margin-bottom:16px;">PAYMENT STATUS THIS MONTH</h2>
   {% if payment %}
@@ -59,4 +65,34 @@
 </div>
 
 <a href="/members" style="display:block; margin-top:20px; color:#64748b; font-size:14px;">← Back to Members</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+  const ctx = document.getElementById('sessionsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels | tojson }},
+      datasets: [{
+        label: 'Sessions',
+        data: {{ chart_values | tojson }},
+        backgroundColor: '#38bdf8',
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

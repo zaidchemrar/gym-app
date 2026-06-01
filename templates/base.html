@@ -171,7 +171,59 @@
       font-weight: 500;
     }
     .flash-success { background: #dcfce7; color: #16a34a; }
-    .flash-error { background: #fee2e2; color: #dc2626; }
+    .flash-error { background: #fee2e2; color: #dc2626; }/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .sidebar .logo {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .sidebar nav a {
+    padding: 8px 12px;
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+  .sidebar a[href='/logout'] {
+    margin-top: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .main {
+    margin-left: 0;
+    padding: 20px;
+  }
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
   </style>
 </head>
 <body>
@@ -186,6 +238,9 @@
       </a>
       <a href="/trainers" class="{{ 'active' if request.path == '/trainers' }}">
   <span class="icon">💪</span> Trainers
+</a>
+<a href="/settings" class="{{ 'active' if request.path == '/settings' }}">
+  <span class="icon">⚙️</span> Settings
 </a>
       <a href="/sessions" class="{{ 'active' if request.path == '/sessions' }}">
         <span class="icon">🏃</span> Sessions

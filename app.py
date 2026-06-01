@@ -1,12 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import pymysql
 import bcrypt
+import csv
+import io
+from flask import Response
 from dotenv import load_dotenv
 import os
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'gymapp2026'
+@app.before_request
+def before_request():
+    if 'user' in session:
+     create_monthly_payments()
 from functools import wraps
 
 def login_required(f):
@@ -16,6 +23,26 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
+
+def create_monthly_payments():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT id FROM members
+        WHERE id NOT IN (
+            SELECT member_id FROM payments
+            WHERE MONTH(payment_month) = MONTH(CURDATE())
+            AND YEAR(payment_month) = YEAR(CURDATE())
+        )
+    """)
+    members_without_payment = cursor.fetchall()
+    for member in members_without_payment:
+        cursor.execute(
+            "INSERT INTO payments (member_id, payment_month, amount, status) VALUES (%s, CURDATE(), 29.00, 'unpaid')",
+            (member['id'],)
+        )
+    db.commit()
+    db.close()
 
 # Database connection
 def get_db():
@@ -402,13 +429,104 @@ def member_profile(member_id):
     """, (member_id,))
     favorite = cursor.fetchone()
 
+    cursor.execute("""
+        SELECT DATE_FORMAT(session_date, '%%b %%Y') AS month_label,
+               COUNT(*) AS total
+        FROM sessions
+        WHERE member_id = %s
+        AND session_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(session_date, '%%b %%Y'), 
+                 DATE_FORMAT(session_date, '%%Y-%%m')
+        ORDER BY DATE_FORMAT(session_date, '%%Y-%%m')
+    """, (member_id,))
+    chart_data = cursor.fetchall()
+
     db.close()
+
+    chart_labels = [row['month_label'] for row in chart_data]
+    chart_values = [row['total'] for row in chart_data]
+
     return render_template('member_profile.html',
         member=member,
         payment=payment,
         sessions=sessions,
         monthly=monthly,
-        favorite=favorite
+        favorite=favorite,
+        chart_labels=chart_labels,
+        chart_values=chart_values
     )
+
+@app.route('/export/payments')
+@login_required
+def export_payments():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT m.first_name, m.last_name, m.email, 
+               p.payment_month, p.amount, p.status, p.payment_date
+        FROM payments p
+        JOIN members m ON p.member_id = m.id
+        ORDER BY p.status ASC
+    """)
+    payments = cursor.fetchall()
+    db.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['First Name', 'Last Name', 'Email', 'Month', 'Amount', 'Status', 'Payment Date'])
+    for p in payments:
+        writer.writerow([
+            p['first_name'], p['last_name'], p['email'],
+            p['payment_month'], p['amount'], p['status'],
+            p['payment_date'] or 'Not paid'
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=payments.csv'}
+    )
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        current_password = request.form['current_password'].encode('utf-8')
+        new_password = request.form['new_password'].strip()
+        confirm_password = request.form['confirm_password'].strip()
+
+        if not new_password or not confirm_password:
+            flash('All fields are required.', 'error')
+            return render_template('settings.html')
+
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return render_template('settings.html')
+
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters.', 'error')
+            return render_template('settings.html')
+
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = %s", (session['user'],))
+        user = cursor.fetchone()
+
+        stored = user['password']
+        if isinstance(stored, str):
+            stored = stored.encode('utf-8')
+
+        if not bcrypt.checkpw(current_password, stored):
+            flash('Current password is incorrect.', 'error')
+            db.close()
+            return render_template('settings.html')
+
+        hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        cursor.execute("UPDATE users SET password = %s WHERE username = %s", (hashed, session['user']))
+        db.commit()
+        db.close()
+        flash('Password changed successfully!', 'success')
+        return redirect(url_for('settings'))
+    return render_template('settings.html')
 if __name__ == '__main__':
     app.run(debug=True)
