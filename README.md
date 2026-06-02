@@ -4,23 +4,6 @@ A full-stack gym management system built with Python, Flask, and MySQL.
 
 ## Live Demo
 🔗 Coming soon
-## Screenshots
-
-### Login
-![Login](screenshots/login.png)
-
-### Dashboard
-![Dashboard](screenshots/dashboard.png)
-
-### Members
-![Members](screenshots/members.png)
-
-### Member Profile
-![Profile](screenshots/profile.png)
-
-### Payments
-![Payments](screenshots/payments.png)
-
 ## Features
 
 ### Admin Portal
