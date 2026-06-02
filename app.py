@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+from flask_mail import Mail, Message
 import pymysql
 import bcrypt
 import csv
@@ -10,6 +11,12 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'gymapp2026'
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+mail = Mail(app)
 @app.before_request
 def before_request():
     if 'user' in session:
@@ -36,8 +43,8 @@ def create_monthly_payments():
     db = get_db()
     cursor = db.cursor()
     cursor.execute("""
-        SELECT id FROM members
-        WHERE id NOT IN (
+        SELECT m.id, m.first_name, m.email FROM members m
+        WHERE m.id NOT IN (
             SELECT member_id FROM payments
             WHERE MONTH(payment_month) = MONTH(CURDATE())
             AND YEAR(payment_month) = YEAR(CURDATE())
@@ -49,6 +56,25 @@ def create_monthly_payments():
             "INSERT INTO payments (member_id, payment_month, amount, status) VALUES (%s, CURDATE(), 29.00, 'unpaid')",
             (member['id'],)
         )
+        try:
+            msg = Message(
+                subject='GymPro — Monthly Payment Reminder',
+                sender=os.getenv('MAIL_USERNAME'),
+                recipients=[member['email']]
+            )
+            msg.body = f"""
+Hi {member['first_name']},
+
+This is a reminder that your monthly gym subscription of 29€ is due.
+
+Please contact the gym to make your payment.
+
+Best regards,
+GymPro Team
+            """
+            mail.send(msg)
+        except Exception as e:
+            print(f"Email error for {member['email']}: {e}")
     db.commit()
     db.close()
 
@@ -164,6 +190,27 @@ def add_member():
             (new_member_id,)
         )
         db.commit()
+
+        try:
+            msg = Message(
+                subject='Welcome to GymPro!',
+                sender=os.getenv('MAIL_USERNAME'),
+                recipients=[email]
+            )
+            msg.body = f"""
+Hi {first_name},
+
+Welcome to GymPro! Your membership has been registered.
+
+Your monthly subscription is 29€. You will receive a reminder each month.
+
+Best regards,
+GymPro Team
+            """
+            mail.send(msg)
+        except Exception as e:
+            print(f"Email error: {e}")
+
         db.close()
         flash('Member added successfully!', 'success')
         return redirect(url_for('members'))

@@ -15,7 +15,7 @@
       color: white;
       display: flex;
       flex-direction: column;
-      
+      justify-content: space-between;
       padding: 30px 20px;
       position: fixed;
       height: 100vh;
@@ -54,19 +54,9 @@
     }
 
     /* PAGE HEADER */
-    .page-header {
-      margin-bottom: 30px;
-    }
-    .page-header h1 {
-      font-size: 26px;
-      color: #0f172a;
-      font-weight: 700;
-    }
-    .page-header p {
-      color: #64748b;
-      margin-top: 4px;
-      font-size: 14px;
-    }
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 26px; color: #0f172a; font-weight: 700; }
+    .page-header p { color: #64748b; margin-top: 4px; font-size: 14px; }
 
     /* CARDS */
     .card {
@@ -135,13 +125,7 @@
     .btn-success:hover { background: #16a34a; color: white; }
 
     /* BADGES */
-    .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-paid { background: #dcfce7; color: #16a34a; }
     .badge-unpaid { background: #fee2e2; color: #dc2626; }
 
@@ -163,95 +147,90 @@
     }
 
     /* FLASH MESSAGES */
-    .flash {
-      padding: 14px 18px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-size: 14px;
-      font-weight: 500;
-    }
+    .flash { padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
     .flash-success { background: #dcfce7; color: #16a34a; }
-    .flash-error { background: #fee2e2; color: #dc2626; }/* RESPONSIVE */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: row;
-    align-items: center;
-    padding: 16px 20px;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-start;
-  }
-  .sidebar .logo {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-  .sidebar nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .sidebar nav a {
-    padding: 8px 12px;
-    font-size: 13px;
-    margin-bottom: 0;
-  }
-  .sidebar a[href='/logout'] {
-    margin-top: 0;
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  .main {
-    margin-left: 0;
-    padding: 20px;
-  }
-  .stats-row {
-    grid-template-columns: 1fr 1fr;
-  }
-  table {
-    display: block;
-    overflow-x: auto;
-  }
-  div[style*="grid-template-columns: 1fr 1fr"] {
-    grid-template-columns: 1fr !important;
-  }
-}
+    .flash-error { background: #fee2e2; color: #dc2626; }
 
-@media (max-width: 480px) {
-  .stats-row {
-    grid-template-columns: 1fr;
-  }
-}
+    /* DARK MODE */
+    body.dark { background: #0f172a; }
+    body.dark .main { background: #0f172a; }
+    body.dark .card { background: #1e293b; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+    body.dark .stat-card { background: #1e293b; }
+    body.dark .page-header h1 { color: #f1f5f9; }
+    body.dark .page-header p { color: #94a3b8; }
+    body.dark .stat-card .value { color: #f1f5f9; }
+    body.dark .stat-card .label { color: #94a3b8; }
+    body.dark th { color: #94a3b8; border-bottom-color: #334155; }
+    body.dark td { color: #cbd5e1; border-bottom-color: #1e293b; }
+    body.dark tr:hover td { background: #334155; }
+    body.dark .form-group label { color: #cbd5e1; }
+    body.dark .form-group input, body.dark .form-group select { background: #334155; border-color: #475569; color: #f1f5f9; }
+    body.dark .form-group input:focus, body.dark .form-group select:focus { border-color: #38bdf8; }
+    body.dark h2 { color: #f1f5f9; }
+    body.dark .flash-success { background: #166534; color: #bbf7d0; }
+    body.dark .flash-error { background: #991b1b; color: #fecaca; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        padding: 16px 20px;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
+      }
+      .sidebar .logo { width: 100%; margin-bottom: 8px; }
+      .sidebar nav { display: flex; flex-wrap: wrap; gap: 6px; }
+      .sidebar nav a { padding: 8px 12px; font-size: 13px; margin-bottom: 0; }
+      .main { margin-left: 0; padding: 20px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      table { display: block; overflow-x: auto; }
+      div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <div class="logo">🏋️ <span>GymPro</span></div>
-    <nav>
-      <a href="/" class="{{ 'active' if request.path == '/' }}">
-        <span class="icon">📊</span> Dashboard
+    <div>
+      <div class="logo">🏋️ <span>GymPro</span></div>
+      <nav>
+        <a href="/" class="{{ 'active' if request.path == '/' }}">
+          <span class="icon">📊</span> Dashboard
+        </a>
+        <a href="/members" class="{{ 'active' if request.path == '/members' }}">
+          <span class="icon">👥</span> Members
+        </a>
+        <a href="/trainers" class="{{ 'active' if request.path == '/trainers' }}">
+          <span class="icon">💪</span> Trainers
+        </a>
+        <a href="/sessions" class="{{ 'active' if request.path == '/sessions' }}">
+          <span class="icon">🏃</span> Sessions
+        </a>
+        <a href="/payments" class="{{ 'active' if request.path == '/payments' }}">
+          <span class="icon">💶</span> Payments
+        </a>
+        <a href="/settings" class="{{ 'active' if request.path == '/settings' }}">
+          <span class="icon">⚙️</span> Settings
+        </a>
+      </nav>
+    </div>
+
+    <div>
+      <button onclick="toggleDark()" id="darkBtn" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:12px 16px; border-radius:10px; font-size:15px; text-align:left; width:100%; display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <span id="darkIcon">🌙</span> <span id="darkLabel">Dark Mode</span>
+      </button>
+      <a href="/logout" style="color:#ef4444; display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; text-decoration:none; font-size:15px;">
+        <span class="icon">🚪</span> Logout
       </a>
-      <a href="/members" class="{{ 'active' if request.path == '/members' }}">
-        <span class="icon">👥</span> Members
-      </a>
-      <a href="/trainers" class="{{ 'active' if request.path == '/trainers' }}">
-  <span class="icon">💪</span> Trainers
-</a>
-<a href="/settings" class="{{ 'active' if request.path == '/settings' }}">
-  <span class="icon">⚙️</span> Settings
-</a>
-      <a href="/sessions" class="{{ 'active' if request.path == '/sessions' }}">
-        <span class="icon">🏃</span> Sessions
-      </a>
-      <a href="/payments" class="{{ 'active' if request.path == '/payments' }}">
-        <span class="icon">💶</span> Payments
-      </a>
-      <a href="/logout" style="margin-top: auto; color: #ef4444;">
-      <span class="icon">🚪</span> Logout
-</a>
-    </nav>
+    </div>
   </div>
 
   <div class="main">
@@ -265,5 +244,23 @@
 
     {% block content %}{% endblock %}
   </div>
+
+  <script>
+    function toggleDark() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', isDark);
+      document.getElementById('darkIcon').textContent = isDark ? '☀️' : '🌙';
+      document.getElementById('darkLabel').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedDark = localStorage.getItem('darkMode') === 'true';
+      if (savedDark) {
+        document.body.classList.add('dark');
+        document.getElementById('darkIcon').textContent = '☀️';
+        document.getElementById('darkLabel').textContent = 'Light Mode';
+      }
+    });
+  </script>
 </body>
 </html>
