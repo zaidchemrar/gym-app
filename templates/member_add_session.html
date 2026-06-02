@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Log Session — GymPro</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f4f6fb; display: flex; justify-content: center; padding: 60px 20px; }
+    .card { background: white; padding: 30px; border-radius: 16px; width: 440px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    h1 { font-size: 22px; color: #0f172a; margin-bottom: 6px; }
+    p { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #38bdf8; }
+    button { width: 100%; padding: 12px; background: #38bdf8; color: #0f172a; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button:hover { background: #0ea5e9; color: white; }
+    .back { display: block; margin-top: 16px; color: #64748b; font-size: 14px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Log a Session</h1>
+    <p>Record your gym session today</p>
+    <form method="POST">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="session_date" required />
+      </div>
+      <div class="form-group">
+        <label>Session Type</label>
+        <select name="session_type" required>
+          <option value="">Select Type</option>
+          <option value="Weights">Weights</option>
+          <option value="Cardio">Cardio</option>
+          <option value="CrossFit">CrossFit</option>
+          <option value="Swimming">Swimming</option>
+          <option value="Yoga">Yoga</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" name="duration_minutes" placeholder="e.g. 60" min="1" required />
+      </div>
+      <div class="form-group">
+        <label>Trainer (optional)</label>
+        <select name="trainer_id">
+          <option value="">No Trainer</option>
+          {% for trainer in trainers %}
+          <option value="{{ trainer.id }}">{{ trainer.first_name }} {{ trainer.last_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit">Log Session</button>
+    </form>
+    <a href="/member-dashboard" class="back">← Back to Dashboard</a>
+  </div>
+</body>
+</html>

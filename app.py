@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 import pymysql
 import bcrypt
 import csv
@@ -21,6 +21,14 @@ def login_required(f):
     def decorated(*args, **kwargs):
         if 'user' not in session:
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+def member_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'member_id' not in session:
+            return redirect(url_for('member_login'))
         return f(*args, **kwargs)
     return decorated
 
@@ -528,5 +536,137 @@ def settings():
         flash('Password changed successfully!', 'success')
         return redirect(url_for('settings'))
     return render_template('settings.html')
+@app.route('/member-login', methods=['GET', 'POST'])
+def member_login():
+    if 'member_id' in session:
+        return redirect(url_for('member_dashboard'))
+    if request.method == 'POST':
+        email = request.form['email'].strip()
+        password = request.form['password']
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT id, first_name, password FROM members WHERE email = %s", (email,))
+        member = cursor.fetchone()
+        db.close()
+        if member and member['password'] == password:
+            session['member_id'] = member['id']
+            session['member_name'] = member['first_name']
+            flash('Welcome back, ' + member['first_name'] + '!', 'success')
+            return redirect(url_for('member_dashboard'))
+        flash('Invalid email or password.', 'error')
+    return render_template('member_login.html')
+@app.route('/member-logout')
+def member_logout():
+    session.pop('member_id', None)
+    session.pop('member_name', None)
+    return redirect(url_for('member_login'))
+
+@app.route('/member-dashboard')
+@member_login_required
+def member_dashboard():
+    member_id = session['member_id']
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM members WHERE id = %s", (member_id,))
+    member = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT * FROM payments 
+        WHERE member_id = %s 
+        AND MONTH(payment_month) = MONTH(CURDATE())
+        AND YEAR(payment_month) = YEAR(CURDATE())
+    """, (member_id,))
+    payment = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT s.*, CONCAT(t.first_name, ' ', t.last_name) AS trainer_name
+        FROM sessions s
+        LEFT JOIN trainers t ON s.trainer_id = t.id
+        WHERE s.member_id = %s
+        ORDER BY s.session_date DESC
+        LIMIT 10
+    """, (member_id,))
+    sessions = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total_sessions,
+               COALESCE(SUM(duration_minutes), 0) AS total_minutes
+        FROM sessions
+        WHERE member_id = %s
+        AND MONTH(session_date) = MONTH(CURDATE())
+        AND YEAR(session_date) = YEAR(CURDATE())
+    """, (member_id,))
+    monthly = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT DATE_FORMAT(session_date, '%%b %%Y') AS month_label,
+               COUNT(*) AS total
+        FROM sessions
+        WHERE member_id = %s
+        AND session_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(session_date, '%%b %%Y'),
+                 DATE_FORMAT(session_date, '%%Y-%%m')
+        ORDER BY DATE_FORMAT(session_date, '%%Y-%%m')
+    """, (member_id,))
+    chart_data = cursor.fetchall()
+    db.close()
+
+    chart_labels = [row['month_label'] for row in chart_data]
+    chart_values = [row['total'] for row in chart_data]
+
+    return render_template('member_dashboard.html',
+        member=member,
+        payment=payment,
+        sessions=sessions,
+        monthly=monthly,
+        chart_labels=chart_labels,
+        chart_values=chart_values
+    )
+
+@app.route('/member-add-session', methods=['GET', 'POST'])
+@member_login_required
+def member_add_session():
+    member_id = session['member_id']
+    db = get_db()
+    cursor = db.cursor()
+    if request.method == 'POST':
+        session_date = request.form['session_date']
+        session_type = request.form['session_type']
+        duration_minutes = request.form['duration_minutes']
+        trainer_id = request.form['trainer_id'] or None
+        cursor.execute(
+            "INSERT INTO sessions (member_id, session_date, session_type, duration_minutes, trainer_id) VALUES (%s, %s, %s, %s, %s)",
+            (member_id, session_date, session_type, duration_minutes, trainer_id)
+        )
+        db.commit()
+        db.close()
+        flash('Session logged!', 'success')
+        return redirect(url_for('member_dashboard'))
+    cursor.execute("SELECT * FROM trainers")
+    trainers = cursor.fetchall()
+    db.close()
+    return render_template('member_add_session.html', trainers=trainers)
+
+@app.route('/set_member_password/<int:member_id>', methods=['GET', 'POST'])
+@login_required
+def set_member_password(member_id):
+    db = get_db()
+    cursor = db.cursor()
+    if request.method == 'POST':
+        password = request.form['password'].strip()
+        if len(password) < 6:
+            flash('Password must be at least 6 characters.', 'error')
+            return redirect(url_for('set_member_password', member_id=member_id))
+        cursor.execute("UPDATE members SET password = %s WHERE id = %s", (password, member_id))
+        db.commit()
+        db.close()
+        flash('Member password set successfully!', 'success')
+        return redirect(url_for('members'))
+    cursor.execute("SELECT * FROM members WHERE id = %s", (member_id,))
+    member = cursor.fetchone()
+    db.close()
+    return render_template('set_member_password.html', member=member)
+
 if __name__ == '__main__':
     app.run(debug=True)

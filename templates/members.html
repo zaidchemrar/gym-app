@@ -27,6 +27,7 @@
       <td>{{ member.phone }}</td>
       <td>{{ member.join_date }}</td>
       <td>
+        <a href="/set_member_password/{{ member.id }}" class="btn" style="background:#f1f5f9; color:#0f172a; padding:6px 12px; font-size:12px; margin-right:6px;">🔑 Password</a>
         <a href="/edit_member/{{ member.id }}" class="btn btn-success" style="padding:6px 12px; font-size:12px; margin-right:6px;">Edit</a>
         <form method="POST" action="/delete_member/{{ member.id }}" style="display:inline;">
           <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="return confirm('Delete this member?')">Delete</button>
